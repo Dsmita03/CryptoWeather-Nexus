@@ -13,7 +13,7 @@ const Crypto: React.FC = () => {
   const [cryptoData, setCryptoData] = useState<Record<string, CryptoData>>({});
   const [historicalData, setHistoricalData] = useState<HistoricalPrice[]>([]);
   const [selectedCrypto, setSelectedCrypto] = useState<string>("bitcoin");
-  const [isNavbarOpen, setIsNavbarOpen] = useState(false); // Add state for Navbar open/close
+  const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
@@ -31,19 +31,17 @@ const Crypto: React.FC = () => {
   }, []);
 
   const toggleFavorite = (id: string) => {
-    let updatedFavorites = [...favorites];
-    if (updatedFavorites.includes(id)) {
-      updatedFavorites = updatedFavorites.filter((fav) => fav !== id);
-    } else {
-      updatedFavorites.push(id);
-    }
+    let updatedFavorites = favorites.includes(id)
+      ? favorites.filter((fav) => fav !== id)
+      : [...favorites, id];
+
     setFavorites(updatedFavorites);
     localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
   };
 
   const fetchCryptoDetailsData = async (id: string) => {
     const data = await fetchCryptoDetails(id);
-    console.log(data); // Log or use the detailed data
+    console.log(data);
   };
 
   useEffect(() => {
@@ -54,13 +52,13 @@ const Crypto: React.FC = () => {
 
   // Prepare data for the chart
   const chartData = {
-    labels: historicalData.map(([timestamp]) => new Date(timestamp).toLocaleDateString()),
+    labels: historicalData.map(({ time }) => new Date(time).toLocaleDateString()),
     datasets: [
       {
         label: `${selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)} Historical Price`,
-        data: historicalData.map(([_, price]) => price),
-        borderColor: "#6366f1", // Indigo-500
-        backgroundColor: "rgba(100, 116, 235, 0.2)", // Indigo-200 with opacity
+        data: historicalData.map(({ price }) => price),
+        borderColor: "#6366f1",
+        backgroundColor: "rgba(100, 116, 235, 0.2)",
         fill: true,
       },
     ],
@@ -70,7 +68,13 @@ const Crypto: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <Navbar isOpen={isNavbarOpen} setIsOpen={setIsNavbarOpen} />
 
-      <div className="flex-grow flex flex-col items-center py-8 px-4 md:px-8" style={{marginLeft: isNavbarOpen ? "250px":"0px", transition:"margin-left 0.3s ease"}}>
+      <div
+        className="flex-grow flex flex-col items-center py-8 px-4 md:px-8"
+        style={{
+          marginLeft: isNavbarOpen ? "250px" : "0px",
+          transition: "margin-left 0.3s ease",
+        }}
+      >
         <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-4xl mb-8 mt-16">
           <h1 className="text-4xl font-extrabold text-center mb-4 text-gray-100">
             Crypto Tracker
@@ -129,16 +133,20 @@ const Crypto: React.FC = () => {
             </h2>
             <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
               <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">Price:</span> ${cryptoData[selectedCrypto]?.price ?? "N/A"}
+                <span className="font-semibold text-gray-100">Price:</span>{" "}
+                ${cryptoData[selectedCrypto]?.price ?? "N/A"}
               </p>
               <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">24h Change:</span> {cryptoData[selectedCrypto]?.change24h ?? "N/A"}%
+                <span className="font-semibold text-gray-100">24h Change:</span>{" "}
+                {cryptoData[selectedCrypto]?.change24h ?? "N/A"}%
               </p>
               <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">Market Cap:</span> ${cryptoData[selectedCrypto]?.market_cap ?? "N/A"}
+                <span className="font-semibold text-gray-100">Market Cap:</span>{" "}
+                ${cryptoData[selectedCrypto]?.market_cap ?? "N/A"}
               </p>
               <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">Volume:</span> ${cryptoData[selectedCrypto]?.volume ?? "N/A"}
+                <span className="font-semibold text-gray-100">Volume:</span>{" "}
+                ${cryptoData[selectedCrypto]?.volume ?? "N/A"}
               </p>
             </div>
           </div>
@@ -147,17 +155,13 @@ const Crypto: React.FC = () => {
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-4 text-gray-100">Historical Data</h2>
             <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
-              <Line data={chartData} options={{ responsive: true }} />
+              {historicalData.length > 0 ? (
+                <Line data={chartData} options={{ responsive: true }} />
+              ) : (
+                <p className="text-gray-400">No historical data available.</p>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* About Section */}
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-4xl">
-          <h2 className="text-2xl font-bold mb-4 text-gray-100">About</h2>
-          <p className="text-lg text-gray-300">
-            Welcome to the Crypto Tracker page. Here, you can explore live cryptocurrency prices, market trends, and detailed analytics. Stay informed with real-time updates and historical data for your favorite cryptocurrencies.
-          </p>
         </div>
       </div>
 
