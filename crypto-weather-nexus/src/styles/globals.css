@@ -1,3 +1,89 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 🌟 Global Styling */
+@layer base {
+  body {
+    @apply bg-gray-100 text-gray-900 font-sans;
+  }
+}
+
+/* 🌟 Custom Components */
+@layer components {
+  /* 📌 Dashboard Container */
+  .dashboard-container {
+    @apply bg-white shadow-lg rounded-lg min-h-screen p-6 transition-all duration-300;
+  }
+
+  /* 📌 Card Design (Glassmorphism) */
+  .card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-lg p-6 transition-all duration-300;
+  }
+
+  .card:hover {
+    @apply transform scale-105 shadow-xl;
+  }
+
+  /* 📌 Sidebar (Neumorphic UI) */
+  .sidebar {
+    @apply bg-white shadow-lg border-r border-gray-200 w-64 h-screen transition-all duration-300;
+  }
+
+  .sidebar.collapsed {
+    @apply w-20;
+  }
+
+  /* 📌 Sidebar Items */
+  .sidebar-item {
+    @apply flex items-center space-x-3 px-4 py-3 hover:bg-gray-200 transition-all duration-300 cursor-pointer;
+  }
+
+  /* 📌 Grid Layouts */
+  .grid-section {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6 mt-6;
+  }
+
+  .grid-news {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6 mt-6;
+  }
+
+  /* 📌 Weather Card */
+  .weather-card {
+    @apply p-5 bg-white border border-gray-200 shadow-lg rounded-lg transition-all duration-300 cursor-pointer;
+  }
+
+  .weather-card:hover {
+    @apply shadow-xl transform scale-105;
+  }
+
+  /* 📌 Weather Details */
+  .weather-city {
+    @apply text-xl font-bold text-gray-800 mb-2;
+  }
+
+  .weather-temp {
+    @apply text-2xl font-bold text-blue-600 mb-1;
+  }
+
+  .weather-condition {
+    @apply text-lg font-medium text-gray-600 mb-1;
+  }
+
+  .weather-wind {
+    @apply text-sm text-gray-500;
+  }
+
+  /* 📌 Chart Styling */
+  .chart-container {
+    @apply bg-white border border-gray-300 rounded-lg shadow-lg p-6 transition-transform duration-300;
+  }
+
+  .chart-container:hover {
+    @apply transform scale-105;
+  }
+
+  .chart-title {
+    @apply text-lg font-bold text-gray-800 mb-2;
+  }
+}
