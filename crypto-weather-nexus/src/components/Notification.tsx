@@ -5,6 +5,7 @@ import { RootState } from "../store/store"; // ✅ Import RootState for TypeScri
 const MAX_NOTIFICATIONS = 5; // ✅ Limit the number of notifications
 
 const Notification = () => {
+  // Ensuring proper type safety with RootState
   const livePrices = useSelector((state: RootState) => state.websocket?.livePrices || {});
   const [notifications, setNotifications] = useState<string[]>([]);
 

@@ -1,26 +1,42 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { fetchCryptoNews } from "../services/api";
 
-// Define types for the News state
-interface NewsState {
-  articles: Array<{ title: string; link: string; source: { name: string } }>;
-  status: "idle" | "loading" | "failed";
-  error: string | null;
+// Define the shape of a NewsArticle
+interface NewsArticle {
+  title: string;
+  description: string;
+  url: string;
+  source: { name: string };
+  urlToImage?: string;
 }
 
-// Initial state of the news slice
+// Response from the API
+interface NewsResponse {
+  results: NewsArticle[];
+}
+
+// NewsState shape
+interface NewsState {
+  articles: NewsArticle[];
+  status: "idle" | "loading" | "failed";
+  error: string | null;
+  loading: boolean;
+}
+
 const initialState: NewsState = {
   articles: [],
   status: "idle",
   error: null,
+  loading: false,
 };
 
-// Async thunk to fetch crypto news data
+// Async thunk to fetch news data
 export const getNewsData = createAsyncThunk("news/getNews", async () => {
-  return await fetchCryptoNews(); // Fetch crypto news from the API
+  const news = await fetchCryptoNews();
+  return (news as NewsResponse).results || [];  // Ensure you're returning 'results'
 });
 
-// Create the news slice
+// Create the slice
 const newsSlice = createSlice({
   name: "news",
   initialState,
@@ -28,17 +44,18 @@ const newsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getNewsData.pending, (state) => {
-        state.status = "loading"; // Set status to loading when the request is pending
+        state.status = "loading";
       })
-      .addCase(getNewsData.fulfilled, (state, action: PayloadAction<any>) => {
-        state.status = "idle"; // Set status to idle when the data is successfully fetched
-        state.articles = action.payload; // Store the fetched articles in the state
+      .addCase(getNewsData.fulfilled, (state, action: PayloadAction<NewsArticle[]>) => {
+        state.status = "idle";
+        state.articles = action.payload;
       })
       .addCase(getNewsData.rejected, (state, action) => {
-        state.status = "failed"; // Set status to failed if the request fails
-        state.error = action.error.message || "Error fetching news"; // Store the error message if the request fails
+        state.status = "failed";
+        state.error = action.error.message || "Error fetching news";
       });
   },
 });
+
 
 export default newsSlice.reducer;

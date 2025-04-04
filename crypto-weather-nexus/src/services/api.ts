@@ -36,14 +36,21 @@ export const fetchWeather = async (): Promise<Record<string, WeatherData>> => {
 
           return {
             city,
-            temperature: main?.temp || 0,
-            condition: weather?.[0]?.description || "Unknown",
-            humidity: main?.humidity || 0,
-            windSpeed: wind?.speed || 0,
+            temperature: main?.temp ?? 0, // Default to 0 if temp is missing
+            condition: weather?.[0]?.description ?? "Unknown", // Default to "Unknown" if condition is missing
+            humidity: main?.humidity ?? 0, // Default to 0 if humidity is missing
+            windSpeed: wind?.speed ?? 0, // Default to 0 if windSpeed is missing
           };
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Error fetching weather for ${city}:`, error);
-          return { city, error: error.message };
+          return { 
+            city,
+            temperature: 0, // Default values to ensure WeatherData type
+            condition: "Unknown", // Default condition
+            humidity: 0, // Default humidity
+            windSpeed: 0, // Default wind speed
+            error: error.message, // Include the error message
+          };
         }
       })
     );
@@ -54,9 +61,10 @@ export const fetchWeather = async (): Promise<Record<string, WeatherData>> => {
     }, {} as Record<string, WeatherData>);
   } catch (error) {
     console.error("Error fetching weather data:", error);
-    return {}; // Prevent app crashes by returning an empty object
+    return {}; // Return empty object to prevent app crash
   }
 };
+
 
 // ✅ Fetch Crypto Prices with Retry Mechanism
 export const fetchCryptoPrices = async (
@@ -93,7 +101,7 @@ export const fetchCryptoPrices = async (
 };
 
 // ✅ Fetch Crypto News
-export const fetchCryptoNews = async (): Promise<NewsArticle[]> => {
+export const fetchCryptoNews = async (): Promise<NewsResponse> => {
   checkApiKey(NEWS_API_KEY, "News");
 
   try {
@@ -101,26 +109,10 @@ export const fetchCryptoNews = async (): Promise<NewsArticle[]> => {
       params: { q: "cryptocurrency", apiKey: NEWS_API_KEY },
     });
 
-    return response.data?.articles || [];
+    return { results: response.data?.articles || [] };
   } catch (error) {
     console.error("Error fetching news:", error);
-    return [];
-  }
-};
-
-// ✅ Fetch Weather History (from a custom API route)
-export const fetchWeatherHistory = async (
-  cityName: string
-): Promise<WeatherData[]> => {
-  try {
-    const response = await axios.get(`/api/weather/history`, {
-      params: { city: cityName },
-    });
-
-    return response.data?.history || [];
-  } catch (error) {
-    console.error("Error fetching weather history:", error);
-    return [];
+    return { results: [] }; // Return empty results in case of error
   }
 };
 
@@ -141,7 +133,18 @@ export interface WeatherData {
   condition: string;
   humidity: number;
   windSpeed: number;
-  error?: string;
+  error?: string; // Optional error field for error handling
+}
+
+export interface NewsResponse {
+  results: NewsArticle[];
+}
+
+export interface NewsArticle {
+  title: string;
+  description: string;
+  url: string;
+  source: { name: string };
 }
 
 export interface CryptoData {
@@ -152,18 +155,11 @@ export interface CryptoData {
 }
 
 export interface HistoricalPrice {
-  time: number;
+  time: number; // Change from timestamp to time
   price: number;
 }
 
 export interface CryptoPricesData {
   currentPrices: Record<string, CryptoData>;
   historicalPrices: HistoricalPrice[];
-}
-
-export interface NewsArticle {
-  title: string;
-  description: string;
-  url: string;
-  source: { name: string };
 }

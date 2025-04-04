@@ -15,15 +15,25 @@ interface NewsCardProps {
 
 const NewsCard: React.FC<NewsCardProps> = ({ article, className = "" }) => {
   return (
-    <a href={article.url} target="_blank" rel="noopener noreferrer" className={`group ${className}`}>
+    <a
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group ${className}`}
+      aria-label={`Read the article: ${article.title}`}
+    >
       <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300 transform group-hover:scale-105 flex flex-col h-full">
         {/* Image Section */}
-        {article.urlToImage && (
+        {article.urlToImage ? (
           <img
             src={article.urlToImage}
             alt={article.title}
             className="w-full h-40 object-cover rounded-t-lg"
           />
+        ) : (
+          <div className="w-full h-40 bg-gray-200 rounded-t-lg flex justify-center items-center">
+            <span className="text-gray-500">No Image Available</span>
+          </div>
         )}
 
         <div className="flex flex-col p-6 h-full">

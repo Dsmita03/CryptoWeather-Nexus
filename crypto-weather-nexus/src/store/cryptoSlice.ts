@@ -7,7 +7,7 @@ export const getCryptoData = createAsyncThunk("crypto/getData", async () => {
 
 const cryptoSlice = createSlice({
   name: "crypto",
-  initialState: { data: {}, loading: false, error: null },
+  initialState: { data: {}, loading: false, error: null as string | null }, // Update the type to allow string | null
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -20,9 +20,12 @@ const cryptoSlice = createSlice({
       })
       .addCase(getCryptoData.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        // Ensure `state.error` is a string or null
+        state.error = action.error.message || null; // Fallback to null if the message is undefined
       });
   },
 });
 
 export default cryptoSlice.reducer;
+
+ 

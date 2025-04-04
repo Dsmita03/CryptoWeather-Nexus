@@ -2,12 +2,24 @@ import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import "chart.js/auto";
 
+// Define the ChartData interface for type safety
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor: string;
+    tension: number;
+  }[];
+}
+
 interface LineChartProps {
   data: { time: number; price: number }[];
 }
 
 const LineChart: React.FC<LineChartProps> = ({ data }) => {
-  const [chartData, setChartData] = useState({
+  const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [
       {

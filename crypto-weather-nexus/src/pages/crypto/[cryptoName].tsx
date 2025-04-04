@@ -101,8 +101,8 @@ const Crypto: React.FC = () => {
 
   // Prepare data for the chart
   const chartData = {
-    labels: historicalData.map(({ timestamp }) =>
-      new Date(timestamp).toLocaleDateString()
+    labels: historicalData.map(({ time }) =>
+      new Date(time).toLocaleDateString()
     ),
     datasets: [
       {
@@ -130,84 +130,21 @@ const Crypto: React.FC = () => {
           <h1 className="text-4xl font-extrabold text-center mb-4 text-gray-100">
             Crypto Tracker
           </h1>
-          <p className="text-lg text-gray-300 text-center mb-6">
-            Explore live cryptocurrency prices, market trends, and detailed analytics.
-          </p>
 
-          {/* Favorite Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-100">Your Favorites</h2>
-            <div className="flex flex-wrap gap-4">
-              {favorites.length > 0 ? (
-                favorites.map((favorite) => (
-                  <div
-                    key={favorite}
-                    className="bg-gray-700 p-4 rounded-lg shadow-md text-gray-300 w-32 text-center hover:bg-gray-600 transition duration-200 ease-in-out"
-                  >
-                    <p className="font-semibold">{favorite}</p>
-                    <button
-                      className="text-red-400 mt-2 text-sm hover:text-red-500 transition duration-200"
-                      onClick={() => toggleFavorite(favorite)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-400">No favorites yet.</p>
-              )}
-            </div>
+          <div className="space-x-4 text-center">
+            {["bitcoin", "ethereum", "dogecoin"].map((crypto) => (
+              <button
+                key={crypto}
+                className="text-lg px-4 py-2 rounded-lg bg-blue-500 text-white"
+                onClick={() => setSelectedCrypto(crypto)}
+              >
+                {crypto.charAt(0).toUpperCase() + crypto.slice(1)}
+              </button>
+            ))}
           </div>
 
-          {/* Crypto Selection */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-4 text-gray-100">
-              Select Cryptocurrency
-            </h2>
-            <div className="flex gap-4">
-              {["bitcoin", "ethereum", "dogecoin"].map((crypto) => (
-                <button
-                  key={crypto}
-                  className={`p-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 ${
-                    selectedCrypto === crypto
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-700 text-gray-300"
-                  }`}
-                  onClick={() => setSelectedCrypto(crypto)}
-                >
-                  {crypto.charAt(0).toUpperCase() + crypto.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Crypto Data Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-100">
-              {selectedCrypto.charAt(0).toUpperCase() + selectedCrypto.slice(1)} Data
-            </h2>
-            <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
-              <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">Price:</span> $
-                {cryptoData[selectedCrypto]?.price ?? "N/A"}
-              </p>
-              <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">24h Change:</span>{" "}
-                {cryptoData[selectedCrypto]?.change24h ?? "N/A"}%
-              </p>
-              <p className="text-lg text-gray-300">
-                <span className="font-semibold text-gray-100">Market Cap:</span> $
-                {cryptoData[selectedCrypto]?.market_cap ?? "N/A"}
-              </p>
-            </div>
-          </div>
-
-          {/* Historical Data Section */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-100">Historical Data</h2>
-            <div className="bg-gray-700 p-6 rounded-lg shadow-lg">
-              <Line data={chartData} options={{ responsive: true }} />
-            </div>
+          <div className="mt-8 w-full max-w-2xl mx-auto">
+            <Line data={chartData} options={{ responsive: true }} />
           </div>
         </div>
       </div>

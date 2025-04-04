@@ -1,16 +1,25 @@
 import { Pie } from "react-chartjs-2";
-import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend, ChartOptions } from "chart.js";
 
+// Registering necessary components of Chart.js
 Chart.register(ArcElement, Tooltip, Legend);
 
-const PieChart = () => {
-  const data = {
-    labels: ["Bitcoin", "Ethereum", "Solana", "Cardano"],
+interface PieChartProps {
+  data: { name: string; value: number }[];
+}
+
+const PieChart: React.FC<PieChartProps> = ({ data }) => {
+  // Convert the `data` prop into the format expected by Chart.js
+  const labels = data.map(item => item.name);
+  const chartData = data.map(item => item.value);
+
+  const chartDataSet = {
+    labels: labels,
     datasets: [
       {
-        data: [60, 25, 10, 5], // Market Share %
-        backgroundColor: ["#f7931a", "#627eea", "#00a3e0", "#0033ad"],
-        hoverBackgroundColor: ["#ffb347", "#8c9eff", "#00d1ff", "#3366cc"],
+        data: chartData, // Use values from `data`
+        backgroundColor: ["#f7931a", "#627eea", "#00a3e0", "#0033ad"], // You can modify or make this dynamic as needed
+        hoverBackgroundColor: ["#ffb347", "#8c9eff", "#00d1ff", "#3366cc"], // Same here
         borderWidth: 2,
         borderColor: "#fff",
       },
@@ -18,14 +27,14 @@ const PieChart = () => {
   };
 
   // ✅ Custom Options for Better UI
-  const options = {
+  const options: ChartOptions<'pie'> = {
     plugins: {
       legend: {
-        position: "bottom" as const, // ✅ Improved readability
+        position: "bottom", // ✅ Improved readability
         labels: {
           font: {
             size: 14,
-            weight: "bold",
+            weight: "bold" as const, // Ensure 'weight' is of type 'bold' or similar valid value
           },
           color: "#333",
         },
@@ -43,7 +52,7 @@ const PieChart = () => {
 
   return (
     <div className="flex justify-center">
-      <Pie data={data} options={options} />
+      <Pie data={chartDataSet} options={options} />
     </div>
   );
 };

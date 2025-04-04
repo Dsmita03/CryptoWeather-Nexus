@@ -25,6 +25,16 @@ interface WeatherData {
   windSpeed: number;
 }
 
+interface NewsArticle {
+  title: string;
+  description: string;
+  link: string;
+  url: string;
+  source: {
+    name: string;
+  };
+}
+
 interface CryptoData {
   price: number;
   change24h: number;
@@ -40,7 +50,7 @@ interface HistoricalPrice {
 interface DashboardProps {
   weather: Record<string, WeatherData>;
   crypto: Record<string, CryptoData>;
-  news: { results: { title: string; link: string; source: { name: string } }[] };
+  news: { results: NewsArticle[] };
   historicalBitcoinPrices: HistoricalPrice[];
 }
 
@@ -79,7 +89,7 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
   const livePrices = useSelector((state: RootState) => state.websocket.livePrices || {});
 
   useEffect(() => {
-    dispatch(getNewsData());
+    dispatch(getNewsData() as any); // Ensure dispatch works correctly with async actions
   }, [dispatch]);
 
   // Merge Initial & Real-Time Crypto Prices
@@ -113,7 +123,11 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
         {/* 🌦 Weather Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {["New York", "London", "Tokyo"].map((city) => (
-            <WeatherCard key={city} city={city} weather={weather[city] || { temperature: 0, condition: "N/A", humidity: 0, windSpeed: 0 }} />
+            <WeatherCard
+              key={city}
+              city={city}
+              weather={weather[city] || { temperature: 0, condition: "N/A", humidity: 0, windSpeed: 0 }}
+            />
           ))}
         </div>
 
@@ -133,9 +147,13 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
         {/* 📰 News Section */}
         <h2 className="text-2xl font-bold mt-10 mb-4">Latest Crypto News</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading ? <p className="text-center text-gray-500 col-span-3">Loading news...</p> :
-            articles.slice(0, 5).map((article, index) => <NewsCard key={index} article={article} />)
-          }
+          {loading ? (
+            <p className="text-center text-gray-500 col-span-3">Loading news...</p>
+          ) : (
+            news.results.slice(0, 5).map((article, index) => (
+              <NewsCard key={index} article={article} />
+            ))
+          )}
         </div>
 
         {/* 📊 Charts Section */}
