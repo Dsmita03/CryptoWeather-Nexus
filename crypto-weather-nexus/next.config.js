@@ -1,9 +1,8 @@
-// next.config.js
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Other Next.js configurations go here
+  swcMinify: true,  // Enables faster builds
+  trailingSlash: false, // Keeps standard URL structure
 };
 
 module.exports = nextConfig;
