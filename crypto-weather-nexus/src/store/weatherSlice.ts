@@ -1,30 +1,43 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { fetchWeather } from "../services/api";
 
-interface WeatherState {
-  data: Record<string, any>;
-  status: "idle" | "loading" | "failed";
-  alerts: Record<string, string>; // ✅ Fix: Added alerts
+// Define the shape of weather data for a single city
+interface CityWeather {
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
 }
 
+// Define the overall Redux state for weather
+interface WeatherState {
+  data: Record<string, CityWeather>;  // Weather info per city
+  status: "idle" | "loading" | "failed";
+  alerts: Record<string, string>;     // Weather alerts per city
+}
+
+// Initial state
 const initialState: WeatherState = {
   data: {},
   status: "idle",
-  alerts: {}, // ✅ Fix: Ensure alerts are part of the state
+  alerts: {},
 };
 
-// ✅ Thunk to fetch weather dynamically
+// Async thunk to fetch weather from API
 export const getWeatherData = createAsyncThunk("weather/getWeather", async () => {
-  return await fetchWeather();
+  const response = await fetchWeather();
+  return response;
 });
 
+// Create slice
 const weatherSlice = createSlice({
   name: "weather",
   initialState,
   reducers: {
-    // ✅ Action to update weather alerts dynamically
+    // Action to update city-specific weather alert
     updateWeatherAlert: (state, action: PayloadAction<{ city: string; alert: string }>) => {
-      state.alerts[action.payload.city] = action.payload.alert;
+      const { city, alert } = action.payload;
+      state.alerts[city] = alert;
     },
   },
   extraReducers: (builder) => {
@@ -32,7 +45,7 @@ const weatherSlice = createSlice({
       .addCase(getWeatherData.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(getWeatherData.fulfilled, (state, action: PayloadAction<any>) => {
+      .addCase(getWeatherData.fulfilled, (state, action: PayloadAction<Record<string, CityWeather>>) => {
         state.status = "idle";
         state.data = action.payload;
       })
@@ -42,5 +55,5 @@ const weatherSlice = createSlice({
   },
 });
 
-export const { updateWeatherAlert } = weatherSlice.actions; // ✅ Export alert action
+export const { updateWeatherAlert } = weatherSlice.actions;
 export default weatherSlice.reducer;

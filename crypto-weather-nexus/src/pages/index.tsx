@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { fetchWeather, fetchCryptoPrices, fetchCryptoNews } from "../services/api";
+import { fetchTemperature, fetchCryptoPrices, fetchCryptoNews } from "../services/api";
 import useWebSocket from "../hooks/useWebSocket";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
@@ -11,7 +11,8 @@ import CryptoCard from "../components/CryptoCard";
 import NewsCard from "../components/NewsCard";
 import Footer from "../components/Footer";
 
-// Lazy Load Charts
+// Lazy-loaded charts
+const TemperatureChart = dynamic(() => import("../components/TemperatureChart"), { ssr: false });
 const Sidebar = dynamic(() => import("../components/Navbar"), { ssr: false });
 const LineChart = dynamic(() => import("../components/LineChart"), { ssr: false });
 const PieChart = dynamic(() => import("../components/PieChart"), { ssr: false });
@@ -54,11 +55,11 @@ interface DashboardProps {
   historicalBitcoinPrices: HistoricalPrice[];
 }
 
-// Server-side Data Fetching
+// SSR Fetch
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
     const { currentPrices, historicalPrices } = await fetchCryptoPrices();
-    const [weather, news] = await Promise.all([fetchWeather(), fetchCryptoNews()]);
+    const [weather, news] = await Promise.all([fetchTemperature(), fetchCryptoNews()]);
 
     return {
       props: {
@@ -81,35 +82,62 @@ export const getServerSideProps: GetServerSideProps = async () => {
   }
 };
 
-const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historicalBitcoinPrices }) => {
+const Dashboard: React.FC<DashboardProps> = ({
+  weather,
+  crypto,
+  news,
+  historicalBitcoinPrices,
+}) => {
   const dispatch = useDispatch();
-  useWebSocket(); // Live price updates via WebSocket
+  useWebSocket();
 
   const { articles, loading } = useSelector((state: RootState) => state.news);
   const livePrices = useSelector((state: RootState) => state.websocket.livePrices || {});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // 🔁 Real-time weather updates
+  const [liveWeather, setLiveWeather] = useState<Record<string, WeatherData>>(weather);
 
   useEffect(() => {
-    dispatch(getNewsData() as any); // Ensure dispatch works correctly with async actions
+    const fetchLiveWeather = async () => {
+      try {
+        const updatedWeather = await fetchTemperature();
+        setLiveWeather(updatedWeather);
+      } catch (error) {
+        console.error("Live weather fetch error:", error);
+      }
+    };
+
+    fetchLiveWeather(); // Initial call
+    const interval = setInterval(fetchLiveWeather, 30000); // Every 30s
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    dispatch(getNewsData() as any);
   }, [dispatch]);
 
-  // Merge Initial & Real-Time Crypto Prices
+  // 📈 Merge live crypto with initial
   const mergedCryptoPrices = { ...crypto, ...livePrices };
 
-  // 🎯 Update Bitcoin Historical Prices in Real-Time
+  // 📊 Bitcoin live chart update
   const [updatedBitcoinPrices, setUpdatedBitcoinPrices] = useState(historicalBitcoinPrices);
-
   useEffect(() => {
     if (livePrices["bitcoin"]?.price) {
       const newPrice: HistoricalPrice = {
-        time: Date.now(), // Use current timestamp for real-time update
+        time: Date.now(),
         price: livePrices["bitcoin"].price,
       };
-      setUpdatedBitcoinPrices((prevPrices) => [...prevPrices.slice(-19), newPrice]); // Keep last 20 data points
+      setUpdatedBitcoinPrices((prev) => [...prev.slice(-19), newPrice]);
     }
   }, [livePrices]);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const selectedCryptos = ["bitcoin", "ethereum", "dogecoin"];
+  const currentTempData = ["New York", "London", "Tokyo"].map((city) => ({
+    city,
+    temperature: liveWeather[city]?.temperature || 0,
+  }));
 
   return (
     <div className="flex bg-gray-100 min-h-screen">
@@ -120,31 +148,37 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
           CryptoWeather Nexus Dashboard
         </h1>
 
-        {/* 🌦 Weather Section */}
+        {/* 🌦 Weather */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {["New York", "London", "Tokyo"].map((city) => (
             <WeatherCard
               key={city}
               city={city}
-              weather={weather[city] || { temperature: 0, condition: "N/A", humidity: 0, windSpeed: 0 }}
+              weather={
+                liveWeather[city] || { temperature: 0, condition: "N/A", humidity: 0, windSpeed: 0 }
+              }
             />
           ))}
         </div>
 
-        {/* 💰 Cryptocurrency Section */}
+        {/* 💰 Crypto */}
         <h2 className="text-2xl font-bold mt-10 mb-4">Live Cryptocurrency Prices</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {selectedCryptos.map((id) => (
             <CryptoCard
               key={id}
               id={id}
-              price={mergedCryptoPrices[id]?.price ? `$${mergedCryptoPrices[id]?.price.toFixed(2)}` : "N/A"}
+              price={
+                mergedCryptoPrices[id]?.price
+                  ? `$${mergedCryptoPrices[id]?.price.toFixed(2)}`
+                  : "N/A"
+              }
               change24h={mergedCryptoPrices[id]?.change24h}
             />
           ))}
         </div>
 
-        {/* 📰 News Section */}
+        {/* 📰 News */}
         <h2 className="text-2xl font-bold mt-10 mb-4">Latest Crypto News</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
@@ -156,10 +190,9 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
           )}
         </div>
 
-        {/* 📊 Charts Section */}
+        {/* 📉 Market Charts */}
         <h2 className="text-2xl font-bold mt-10 mb-4">Market Trends</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Real-Time LineChart for Bitcoin */}
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="font-semibold text-lg mb-3">Bitcoin Price History (Live)</h3>
             <LineChart data={updatedBitcoinPrices} />
@@ -167,16 +200,34 @@ const Dashboard: React.FC<DashboardProps> = ({ weather, crypto, news, historical
 
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h3 className="font-semibold text-lg mb-3">Crypto Price Comparisons</h3>
-            <BarGraph prices={Object.entries(mergedCryptoPrices).map(([name, data]) => ({ name, price: data.price || 0 }))} />
+            <BarGraph
+              prices={Object.entries(mergedCryptoPrices).map(([name, data]) => ({
+                name,
+                price: data.price || 0,
+              }))}
+            />
           </div>
+        </div>
 
-          <div className="col-span-1 md:col-span-2 flex justify-center">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h3 className="font-semibold text-lg text-center">Market Distribution</h3>
-              <div className="w-64 h-64 mx-auto">
-                <PieChart data={Object.entries(mergedCryptoPrices).map(([name, data]) => ({ name, value: data.price }))} />
+        {/* 🧩 Chart Pair */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="font-semibold text-lg text-center mb-4">Market Distribution</h3>
+            <div className="flex justify-center items-center">
+              <div className="w-70 h-56">
+                <PieChart
+                  data={Object.entries(mergedCryptoPrices).map(([name, data]) => ({
+                    name,
+                    value: data.price,
+                  }))}
+                />
               </div>
             </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="font-semibold text-lg text-center mb-3">Current Temperature Comparison</h3>
+            <TemperatureChart data={currentTempData} />
           </div>
         </div>
 
