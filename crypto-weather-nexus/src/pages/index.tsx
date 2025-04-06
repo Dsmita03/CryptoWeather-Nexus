@@ -10,7 +10,7 @@ import WeatherCard from "../components/WeatherCard";
 import CryptoCard from "../components/CryptoCard";
 import NewsCard from "../components/NewsCard";
 import Footer from "../components/Footer";
-
+import { useWeatherAlerts } from "@/hooks/useWeatherAlerts";
 // Lazy-loaded charts
 const TemperatureChart = dynamic(() => import("../components/TemperatureChart"), { ssr: false });
 const Sidebar = dynamic(() => import("../components/Navbar"), { ssr: false });
@@ -97,7 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   // 🔁 Real-time weather updates
   const [liveWeather, setLiveWeather] = useState<Record<string, WeatherData>>(weather);
+  useWeatherAlerts(["London", "New York", "Tokyo"]);
 
+  
   useEffect(() => {
     const fetchLiveWeather = async () => {
       try {

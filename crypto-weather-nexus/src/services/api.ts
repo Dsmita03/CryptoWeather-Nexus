@@ -84,7 +84,7 @@ export const fetchWeather = async (): Promise<Record<string, WeatherData>> => {
 
 // ✅ Fetch Temperature Data  
 
-export const fetchTemperature = async (): Promise<Record<string, WeatherData>> => {
+export const fetchTemperature = async (city: string): Promise<Record<string, WeatherData>> => {
   checkApiKey(WEATHER_API_KEY, "Weather");
 
   const cities = ["New York", "London", "Tokyo"];
