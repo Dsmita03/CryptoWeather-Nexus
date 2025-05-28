@@ -145,12 +145,22 @@ const Dashboard: React.FC<DashboardProps> = ({
     <div className="flex bg-gray-100 min-h-screen">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
-      <div className={`flex-1 p-8 transition-all ${isSidebarOpen ? "ml-64" : "ml-20"}`}>
-        <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-8">
-          CryptoWeather Nexus Dashboard
-        </h1>
+     <div
+  className={`flex-1 p-8 transition-all ${isSidebarOpen ? "ml-64" : "ml-20"}`}
+>
+  <h1
+    className="text-5xl font-extrabold text-center mb-8
+               bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500
+               bg-clip-text text-transparent
+               drop-shadow-lg
+               animate-fadeIn"
+    style={{ animationDuration: "1.5s" }}
+  >
+    CryptoWeather Nexus Dashboard
+  </h1>
 
         {/* 🌦 Weather */}
+        <h2 className="text-2xl font-bold mt-10 mb-4">Live Temperature</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {["New York", "London", "Tokyo"].map((city) => (
             <WeatherCard

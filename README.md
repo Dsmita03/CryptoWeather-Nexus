@@ -27,10 +27,18 @@ CryptoWeather Nexus is a modern, multi-page dashboard integrating weather data, 
 - 🧠 **Historical Charting**: Uses Chart.js to visualize pricing and temperature trends.
 - 🌍 **News Highlights**: Top 5 crypto-related headlines from **NewsAPI**.
 - 💥 **WebSocket-Based Alerts**: Receive instant alerts on severe weather changes.
-- 🌟 **Favorites Management**: Save preferred cryptocurrencies using localStorage.
 - 💻 **Responsive UI**: Built with Tailwind CSS, fully optimized for mobile and desktop.
 
 ---
+
+<h2 id="screenshots">⚙ Screenshots</h2>
+<h4>Dashboard Page</h4>
+<img src="snaps/part1.png" alt="Part1" width="800">
+<img src="snaps/part2.png" alt="Part2" width="800">
+<img src="snaps/part3.png" alt="Part3" width="800">
+<h4>Temperature Details Page</h4>
+<img src="snaps/temp.png" alt="temp" width="800">
+
 
 ## ⚙️ Installation
 
